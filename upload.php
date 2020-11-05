@@ -9,11 +9,10 @@ if (!empty($_FILES['images']['name'][0])) {
         $imageTmp = $images['tmp_name'][$position];
         $imageSize = $images['size'][$position];
         $imageError = $images['error'][$position];
-        $imageExt = explode('.', $imageName);
+        $imageExt = explode('/', mime_content_type( $imageTmp ));
         $imageExt = strtolower(end($imageExt));
 
         if (in_array($imageExt, $allowed)) {
-            echo "coucou";
             if ($imageError === 0) {
                 if ($imageSize <= 1048576) {
                     $imageNameNew = uniqid() . '.' . $imageExt;
@@ -34,23 +33,56 @@ if (!empty($_FILES['images']['name'][0])) {
         }
     }
     var_dump($failed);
-    $images = new FilesystemIterator(__DIR__ .'/uploads/');
 }
 
+$images = new FilesystemIterator(__DIR__ .'/uploads/');
 
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['btn_delete']) && !empty($_POST)){
+    $imageToDump = $_POST['image_to_delete'];
+    echo $imageToDump;
+    if (file_exists('./uploads/' . $imageToDump)) {
+        unlink ('./uploads/' . $imageToDump);
+        header('Location: upload.php');
+    }
+}
 
 ?>
 
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>upload images</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css"
+          integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">
+</head>
+<body>
 <form action="" method="post" enctype="multipart/form-data">
+    <div class="form-group">
     <label for="imageUpload">Upload images</label>
-    <input type="file" name="images[]" id="imageUpload" multiple="multiple"/>
-    <button>Send</button>
+    <input type="file"  class="form-control" name="images[]" id="imageUpload" multiple="multiple"/>
+    </div>
+    <button type="submit" class="btn btn-primary">Send</button>
 </form>
 
 <?php if (isset($images)) {
     foreach ($images as $fileinfo) { ?>
-    <figure>
-        <img src="/uploads/<?= $fileinfo->getFilename() ?>" alt="img in uploads directory" >
-        <figcaption>  <?= $fileinfo->getFilename() ?> </figcaption>
-    </figure>
-<?php } }?>
+        <div class="card" style="width: 18rem;">
+            <img src="/uploads/<?= $fileinfo->getFilename() ?>" alt="img in uploads directory"" class="card-img-top" alt="...">
+            <div class="card-body">
+                <h5 class="card-title"> <?= $fileinfo->getFilename() ?> </h5>
+                <form action="upload.php" method="post" >
+                    <input type="hidden" name="image_to_delete" value="<?= $fileinfo->getFilename() ?>">
+                    <button type="submit" name="btn_delete" class="btn btn-primary">delete</button>
+                </form>
+            </div>
+        </div>
+    <?php } }?>
+</body>
+</html>
+
+
