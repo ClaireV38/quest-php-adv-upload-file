@@ -38,7 +38,7 @@ if (!empty($_FILES['images']['name'][0])) {
 $images = new FilesystemIterator(__DIR__ .'/uploads/');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['btn_delete']) && !empty($_POST)){
-    $imageToDump = $_POST['image_to_delete'];
+    $imageToDump = trim($_POST['image_to_delete']);
     echo $imageToDump;
     if (file_exists('./uploads/' . $imageToDump)) {
         unlink ('./uploads/' . $imageToDump);
